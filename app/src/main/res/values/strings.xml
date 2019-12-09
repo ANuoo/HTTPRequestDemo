@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">WorkEight</string>
+    <string name="txt_item_title">hosigus nb!</string>
+    <string name="txt_item_user">wtnl</string>
+    <string name="txt_item_time">2019.12.8</string>
+    <string name="txt_item_image_title">hosigus nb!</string>
+    <string name="txt_item_image_user">wtnl</string>
+    <string name="txt_item_image_time">2019.12.8</string>
+    <string name="img_item_image">img_item_image</string>
+</resources>
