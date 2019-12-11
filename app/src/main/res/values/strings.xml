@@ -7,4 +7,7 @@
     <string name="txt_item_image_user">wtnl</string>
     <string name="txt_item_image_time">2019.12.8</string>
     <string name="img_item_image">img_item_image</string>
+    <string name="txt_item_load">正在加载</string>
+    <string name="txt_top_title">Hi,goodEvening!</string>
+    <string name="txt_top_time">txt_top_time</string>
 </resources>

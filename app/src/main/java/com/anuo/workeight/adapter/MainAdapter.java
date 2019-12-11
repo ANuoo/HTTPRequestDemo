@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.anuo.workeight.R;
 import com.anuo.workeight.data.Item;
+import com.anuo.workeight.manager.DataManager;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -19,8 +20,24 @@ import java.util.List;
 public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int TYPE_HAS_IMG = 1;
     private static final int TYPE_NO_IMG = 0;
+    private static final int TYPE_LOAD = 2;
     private List<Item> list;
     private Context context;
+    private boolean loading = false;
+
+    private LoadViewHolder loadViewHolder;
+    private DataManager.Callback loadMoreCallback = new DataManager.Callback() {
+        @Override
+        public void onSuccess() {
+            loading = false;
+            notifyItemRangeChanged(list.size() - DataManager.requestNum, DataManager.requestNum);
+        }
+
+        @Override
+        public void onFail(Exception e) {
+            loadViewHolder.load.setText("加载失败");
+        }
+    };
 
     public MainAdapter(List<Item> list, Context context) {
         this.list = list;
@@ -32,15 +49,18 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int type) {
         if (type == TYPE_HAS_IMG) {
             return new ImageViewHolder(inflateView(viewGroup, R.layout.item_image_recycler_main));
-        } else {
+        } else if (type == TYPE_NO_IMG) {
             return new ViewHolder(inflateView(viewGroup, R.layout.item_recycler_main));
+        } else {
+            return loadViewHolder == null ?
+                    (loadViewHolder = new LoadViewHolder(inflateView(viewGroup, R.layout.item_load)))
+                    : loadViewHolder;
         }
     }
 
-    private View inflateView(@NonNull ViewGroup viewGroup,@LayoutRes int layoutId) {
+    private View inflateView(@NonNull ViewGroup viewGroup, @LayoutRes int layoutId) {
         return LayoutInflater.from(viewGroup.getContext()).inflate(layoutId, viewGroup, false);
     }
-
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
@@ -55,6 +75,13 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             holder.user.setText(list.get(i).getUser());
             holder.time.setText(list.get(i).getTime());
             Glide.with(context).load(list.get(i).getImageUrl()).override(dpToPx(72), dpToPx(72)).centerCrop().into(holder.image);
+        } else {
+            loadViewHolder.load.setText("正在加载");
+            if (!loading) {
+                loading = true;
+                DataManager.getInstance().loadMore(loadMoreCallback);
+
+            }
         }
     }
 
@@ -65,13 +92,20 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return list.size() + 1;
     }
 
     @Override
     public int getItemViewType(int position) {
-        return list.get(position).getImageUrl() == null ? TYPE_NO_IMG : TYPE_HAS_IMG;
+        if (position == list.size()) {
+            return TYPE_LOAD;
+        } else if (list.get(position).getImageUrl() == null) {
+            return TYPE_NO_IMG;
+        } else {
+            return TYPE_HAS_IMG;
+        }
     }
+
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView title, user, time;
@@ -94,6 +128,15 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             user = view.findViewById(R.id.txt_item_image_user);
             time = view.findViewById(R.id.txt_item_image_time);
             image = view.findViewById(R.id.img_item_image);
+        }
+    }
+
+    class LoadViewHolder extends RecyclerView.ViewHolder {
+        TextView load;
+
+        public LoadViewHolder(View view) {
+            super(view);
+            load = view.findViewById(R.id.txt_item_load);
         }
     }
 
